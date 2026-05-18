@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iron Horse Ledger LLC — Verification Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #080a09;
+  --surface:  #0f1210;
+  --panel:    #141a15;
+  --border:   #1e2820;
+  --ember:    #d4501a;
+  --ember2:   #b03d10;
+  --gold:     #b8892a;
+  --gold2:    #d4a843;
+  --steel:    #8a9a8c;
+  --text:     #c8d4c8;
+  --dim:      #4a5e4c;
+  --mono:     'IBM Plex Mono', monospace;
+  --display:  'Bebas Neue', sans-serif;
+  --serif:    'Crimson Pro', serif;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Grain */
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none;
+  z-index:9999;
+}
+
+/* NAV */
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 16px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(8,10,9,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-logo {
+  font-family: var(--display);
+  font-size: 24px;
+  letter-spacing: 4px;
+  color: var(--text);
+  text-decoration: none;
+}
+.nav-logo span { color: var(--ember); }
+
+.nav-links {
+  display: flex;
+  gap: 32px;
+  list-style: none;
+}
+.nav-links a {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--dim);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--gold2); }
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 48px 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(212,80,26,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 80%, rgba(184,137,42,0.05) 0%, transparent 50%),
+    linear-gradient(180deg, #080a09 0%, #0a0f0a 100%);
+}
+
+/* Locomotive silhouette */
+.loco-silhouette {
+  position: absolute;
+  right: -2%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 65%;
+  max-width: 860px;
+  opacity: 0.15;
+  pointer-events: none;
+}
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 680px;
+}
+
+.hero-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--ember);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.hero-tag::before {
+  content: '';
+  display: block;
+  width: 32px;
+  height: 1px;
+  background: var(--ember);
+}
+
+h1 {
+  font-family: var(--display);
+  font-size: clamp(52px, 7vw, 96px);
+  line-height: 0.95;
+  letter-spacing: 2px;
+  color: var(--text);
+  margin-bottom: 24px;
+}
+h1 span { color: var(--ember); }
+
+.hero-sub {
+  font-family: var(--serif);
+  font-size: 20px;
+  color: var(--steel);
+  margin-bottom: 40px;
+  font-style: italic;
+  max-width: 520px;
+  line-height: 1.5;
+}
+
+.hero-thesis {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--dim);
+  border-left: 2px solid var(--ember);
+  padding-left: 16px;
+  margin-bottom: 48px;
+  line-height: 1.8;
+}
+.hero-thesis strong { color: var(--gold2); }
+
+.btn-row { display: flex; gap: 16px; flex-wrap: wrap; }
+
+.btn {
+  padding: 12px 32px;
+  font-family: var(--display);
+  font-size: 18px;
+  letter-spacing: 3px;
+  text-decoration: none;
+  border-radius: 2px;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.btn-primary {
+  background: var(--ember);
+  color: white;
+}
+.btn-primary:hover { background: var(--ember2); }
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--dim);
+}
+.btn-secondary:hover { border-color: var(--gold); color: var(--gold2); }
+
+/* SECTION */
+section {
+  padding: 100px 48px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--ember);
+  text-transform: uppercase;
+  margin-bottom: 48px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  max-width: 200px;
+}
+
+h2 {
+  font-family: var(--display);
+  font-size: clamp(36px, 4vw, 56px);
+  letter-spacing: 2px;
+  line-height: 1;
+  margin-bottom: 24px;
+}
+
+/* WHAT WE BUILD */
+.products {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2px;
+  margin-top: 48px;
+}
+
+.product-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 36px;
+  position: relative;
+  transition: border-color 0.2s;
+  text-decoration: none;
+  display: block;
+  color: inherit;
+}
+.product-card:hover { border-color: var(--ember); }
+.product-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--ember);
+  transform: scaleX(0);
+  transition: transform 0.2s;
+  transform-origin: left;
+}
+.product-card:hover::before { transform: scaleX(1); }
+
+.product-number {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--dim);
+  margin-bottom: 20px;
+}
+
+.product-card h3 {
+  font-family: var(--display);
+  font-size: 28px;
+  letter-spacing: 2px;
+  color: var(--text);
+  margin-bottom: 12px;
+  line-height: 1;
+}
+
+.product-card p {
+  font-family: var(--serif);
+  font-size: 16px;
+  color: var(--steel);
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.product-link {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--ember);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.product-link::after {
+  content: '→';
+  transition: transform 0.2s;
+}
+.product-card:hover .product-link::after { transform: translateX(4px); }
+
+/* THESIS SECTION */
+.thesis-section {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 80px 48px;
+}
+
+.thesis-inner {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.thesis-quote {
+  font-family: var(--display);
+  font-size: clamp(28px, 3.5vw, 48px);
+  letter-spacing: 2px;
+  line-height: 1.2;
+  color: var(--text);
+  margin-bottom: 24px;
+}
+.thesis-quote span { color: var(--ember); }
+
+.thesis-attr {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+
+/* PATENT SECTION */
+.patent-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-top: 48px;
+}
+
+.patent-item {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+
+.patent-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--ember);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.patent-title {
+  font-family: var(--serif);
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+/* ABOUT */
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: start;
+  margin-top: 48px;
+}
+
+.about-text p {
+  color: var(--steel);
+  margin-bottom: 20px;
+  font-size: 17px;
+}
+
+.about-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.stat-item {
+  padding: 24px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+}
+
+.stat-number {
+  font-family: var(--display);
+  font-size: 48px;
+  letter-spacing: 2px;
+  color: var(--ember);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+
+/* FOOTER */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 40px 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  background: var(--surface);
+}
+
+footer p {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+
+footer span { color: var(--gold); }
+
+/* DIVIDER */
+.divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--border), transparent);
+  margin: 0 48px;
+}
+
+@media(max-width: 768px) {
+  nav { padding: 16px 24px; }
+  .hero { padding: 0 24px 60px; }
+  section { padding: 60px 24px; }
+  .about-grid { grid-template-columns: 1fr; gap: 40px; }
+  .nav-links { display: none; }
+  footer { padding: 32px 24px; flex-direction: column; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-logo">Iron Horse <span>Ledger</span></a>
+  <ul class="nav-links">
+    <li><a href="#products">Products</a></li>
+    <li><a href="#patents">Patents</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="law-library.html">Law Library Demo</a></li>
+    <li><a href="deltaverify.html">DeltaVerify</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-bg"></div>
+
+  <!-- Locomotive SVG Silhouette placeholder -->
+  <svg class="loco-silhouette" viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+    <!-- Simplified Big Boy silhouette -->
+    <rect x="100" y="200" width="700" height="80" rx="4"/>
+    <rect x="150" y="160" width="500" height="60" rx="4"/>
+    <rect x="200" y="120" width="380" height="60" rx="4"/>
+    <rect x="220" y="80" width="120" height="60" rx="4"/>
+    <rect x="360" y="90" width="180" height="50" rx="4"/>
+    <circle cx="180" cy="290" r="50"/>
+    <circle cx="180" cy="290" r="30"/>
+    <circle cx="320" cy="290" r="50"/>
+    <circle cx="320" cy="290" r="30"/>
+    <circle cx="460" cy="290" r="50"/>
+    <circle cx="460" cy="290" r="30"/>
+    <circle cx="600" cy="290" r="50"/>
+    <circle cx="600" cy="290" r="30"/>
+    <circle cx="720" cy="290" r="35"/>
+    <circle cx="720" cy="290" r="20"/>
+    <rect x="770" y="220" width="80" height="120" rx="2"/>
+    <rect x="100" y="340" width="700" height="20" rx="2"/>
+    <!-- Stack -->
+    <rect x="240" y="40" width="40" height="50" rx="4"/>
+    <ellipse cx="260" cy="38" rx="28" ry="12"/>
+    <!-- Headlight -->
+    <circle cx="800" cy="250" r="18" fill="#d4a843" opacity="0.6"/>
+  </svg>
+
+  <div class="hero-content">
+    <div class="hero-tag">Iron Horse Ledger LLC · Gainesville, Missouri</div>
+
+    <h1>Verified.<br><span>Not</span> Assumed.</h1>
+
+    <p class="hero-sub">
+      Tamper-evident verification architecture for AI systems,
+      legal infrastructure, and post-quantum security.
+    </p>
+
+    <div class="hero-thesis">
+      <strong>Verified baseline + current state + delta = truth.</strong><br>
+      Real or fake. Period.
+    </div>
+
+    <div class="btn-row">
+      <a href="law-library.html" class="btn btn-primary">→ Law Library Demo</a>
+      <a href="deltaverify.html" class="btn btn-secondary">DeltaVerify</a>
+      <a href="#about" class="btn btn-secondary">About IHL</a>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- PRODUCTS -->
+<section id="products">
+  <div class="section-label">What We Build</div>
+  <h2>Verification<br>Infrastructure</h2>
+
+  <div class="products">
+
+    <a href="law-library.html" class="product-card">
+      <div class="product-number">01 — Legal Technology</div>
+      <h3>Quipu Law Library</h3>
+      <p>Live legal research powered by quipu hierarchical encoding. Surfaces controlling authority, ranks by confidence, flags uncertain precedent with tamper-evident audit trail.</p>
+      <div class="product-link">Launch Demo</div>
+    </a>
+
+    <a href="deltaverify.html" class="product-card">
+      <div class="product-number">02 — Document Integrity</div>
+      <h3>DeltaVerify</h3>
+      <p>Establish a cryptographic baseline for any document. Verify its integrity at any future point. SHA-256 hashing with blockchain anchoring and XOR divergence visualization.</p>
+      <div class="product-link">Launch Tool</div>
+    </a>
+
+    <div class="product-card">
+      <div class="product-number">03 — AI Governance</div>
+      <h3>Verified Execution Gate</h3>
+      <p>Human lockout at the architectural layer. AI systems cannot act beyond authorized scope without explicit human authorization. Filed March 2026 — 47 days before Anthropic documented the same class of behavior.</p>
+      <div class="product-link">Coming Soon</div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-number">04 — Post-Quantum Security</div>
+      <h3>PQ Blockchain</h3>
+      <p>Dual-signature verification requiring both CRYSTALS-Dilithium and SPHINCS+ independently. Built to NIST 2024 standards from inception with no classical cryptographic layer.</p>
+      <div class="product-link">Coming Soon</div>
+    </div>
+
+  </div>
+</section>
+
+<div class="thesis-section">
+  <div class="thesis-inner">
+    <div class="thesis-quote">
+      "The model is not the whole risk.<br>
+      The <span>untested system</span> around it is."
+    </div>
+    <div class="thesis-attr">VentureBeat · Enterprise AI Infrastructure · May 2026</div>
+  </div>
+</div>
+
+<!-- PATENTS -->
+<section id="patents">
+  <div class="section-label">Patent Portfolio</div>
+  <h2>11 Provisional<br>Patents Filed</h2>
+  <p style="color:var(--steel);max-width:560px;margin-bottom:8px;font-size:17px">
+    Filed pro se. PCT clock running to March 24, 2027.
+    Hardware-confirmed results on IBM quantum processors across 27 experiments.
+  </p>
+
+  <div class="patent-grid">
+    <div class="patent-item">
+      <div class="patent-tag">P1 · Mar 24 2026</div>
+      <div class="patent-title">Universal Asset Verification System</div>
+    </div>
+    <div class="patent-item">
+      <div class="patent-tag">P2 · Mar 24 2026</div>
+      <div class="patent-title">Post-Quantum Blockchain Verification</div>
+    </div>
+    <div class="patent-item">
+      <div class="patent-tag">P3 · Mar 24 2026</div>
+      <div class="patent-title">IHL Claude Verification System</div>
+    </div>
+    <div class="patent-item">
+      <div class="patent-tag">P4 · Mar 27 2026</div>
+      <div class="patent-title">Cryptographic Chain-of-Custody Forensics</div>
+    </div>
+    <div class="patent-item">
+      <div class="patent-tag">P5 · Mar 25 2026</div>
+      <div class="patent-title">Verified Execution Gate / Human Lockout</div>
+    </div>
+    <div class="patent-item">
+      <div class="patent-tag">P6 · Mar 28 2026</div>
+      <div class="patent-title">DNA Deconvolution</div>
+    </div>
+    <div class="patent-item">
+      <div class="patent-tag">P7 · Mar 28 2026</div>
+      <div class="patent-title">Weighted Allele Contribution Scoring</div>
+    </div>
+    <div class="patent-item">
+      <div class="patent-tag">P8 · Mar 30 2026</div>
+      <div class="patent-title">Hierarchical Verification Architecture</div>
+    </div>
+    <div class="patent-item">
+      <div class="patent-tag">P9 · Apr 2 2026</div>
+      <div class="patent-title">Hierarchical QEC Architecture</div>
+    </div>
+    <div class="patent-item">
+      <div class="patent-tag">P10 · Apr 3 2026</div>
+      <div class="patent-title">AI Emotional State Pre-Authorization</div>
+    </div>
+    <div class="patent-item">
+      <div class="patent-tag">P11 · Apr 18 2026</div>
+      <div class="patent-title">Adaptive Multi-Layer QEC</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-label">About</div>
+  <h2>Iron Horse<br>Ledger LLC</h2>
+
+  <div class="about-grid">
+    <div class="about-text">
+      <p>
+        Independent research and development company founded in Gainesville,
+        Missouri. Building tamper-evident verification architecture for AI systems,
+        legal infrastructure, post-quantum security, and forensic science.
+      </p>
+      <p>
+        Founded by Daniel Janes — 15 years emergency services including 7.5 years
+        as assistant chief, construction project management, and independent AI
+        research. Completed an 18-month electronics program in 9 months.
+        Life Scout, Electronics merit badge.
+      </p>
+      <p>
+        The name is not accidental. Big Boy 4006 — the largest steam locomotive
+        ever built — resides at the National Museum of Transportation in
+        St. Louis, Missouri. Iron Horse Ledger is built with the same
+        precision, permanence, and scale.
+      </p>
+      <p style="font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:1px;margin-top:32px">
+        EIN 41-5026418 · Gainesville, Missouri 65655<br>
+        ironhorseledger26@gmail.com
+      </p>
+    </div>
+
+    <div class="about-stats">
+      <div class="stat-item">
+        <div class="stat-number">11</div>
+        <div class="stat-label">Patents Filed</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">60</div>
+        <div class="stat-label">Days to File</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">27</div>
+        <div class="stat-label">IBM Quantum Experiments</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">97.8<span style="font-size:24px">%</span></div>
+        <div class="stat-label">DNA ID Accuracy</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>Iron Horse Ledger LLC · <span>Gainesville, Missouri</span> · EIN 41-5026418</p>
+  <p>Verified baseline + current state + delta = truth. <span>Real or fake. Period.</span></p>
+  <p>IHL™ · All rights reserved · 2026</p>
+</footer>
+
+</body>
+</html>

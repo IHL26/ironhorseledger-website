@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IHL DeltaVerify — Document Integrity Verification</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #080a09;
+  --surface:  #0f1210;
+  --panel:    #141a15;
+  --border:   #1e2820;
+  --ember:    #d4501a;
+  --gold:     #b8892a;
+  --gold2:    #d4a843;
+  --verified: #1db87a;
+  --alert:    #e03434;
+  --steel:    #8a9a8c;
+  --text:     #c8d4c8;
+  --dim:      #4a5e4c;
+  --mono:     'IBM Plex Mono', monospace;
+  --display:  'Bebas Neue', sans-serif;
+  --serif:    'Crimson Pro', serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.6;
+}
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none;
+  z-index:9999;
+}
+
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 14px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(8,10,9,0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo {
+  font-family: var(--display);
+  font-size: 20px;
+  letter-spacing: 4px;
+  color: var(--text);
+  text-decoration: none;
+}
+.nav-logo span { color: var(--ember); }
+.nav-back {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--dim);
+  text-decoration: none;
+  text-transform: uppercase;
+}
+.nav-back:hover { color: var(--gold2); }
+
+.page-header {
+  padding: 48px 40px 32px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.page-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--ember);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.page-header h1 {
+  font-family: var(--display);
+  font-size: 42px;
+  letter-spacing: 3px;
+  line-height: 1;
+  margin-bottom: 12px;
+}
+.page-header p {
+  font-family: var(--serif);
+  font-size: 16px;
+  color: var(--steel);
+  font-style: italic;
+  max-width: 600px;
+}
+
+.main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 48px 40px;
+}
+
+/* STATUS NOTICE */
+.status-notice {
+  padding: 16px 20px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  margin-bottom: 40px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  line-height: 2;
+}
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dot-on { background: var(--verified); box-shadow: 0 0 6px var(--verified); }
+.dot-pending { background: var(--gold2); }
+.status-label { color: var(--text); }
+
+/* PANELS */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 32px;
+  margin-bottom: 24px;
+}
+.panel-title {
+  font-family: var(--display);
+  font-size: 22px;
+  letter-spacing: 3px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.panel-sub {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* DROP ZONE */
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: 2px;
+  padding: 48px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 20px;
+}
+.drop-zone:hover, .drop-zone.dragover {
+  border-color: var(--ember);
+  background: rgba(212,80,26,0.04);
+}
+.drop-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+  opacity: 0.4;
+}
+.drop-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.drop-sub {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--dim);
+  letter-spacing: 1px;
+}
+
+input[type="file"] { display: none; }
+
+.btn {
+  padding: 12px 32px;
+  font-family: var(--display);
+  font-size: 18px;
+  letter-spacing: 3px;
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-primary { background: var(--ember); color: white; }
+.btn-primary:hover { background: #b03d10; }
+.btn-primary:disabled { background: #2a2a2a; color: #444; cursor: not-allowed; }
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--dim);
+}
+.btn-secondary:hover { border-color: var(--gold); color: var(--gold2); }
+
+/* RESULT */
+.result-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 20px;
+  margin-top: 20px;
+  display: none;
+}
+.result-box.show { display: block; }
+
+.result-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.result-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.result-key {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--dim);
+  text-transform: uppercase;
+  min-width: 100px;
+  padding-top: 2px;
+}
+.result-val {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text);
+  word-break: break-all;
+  flex: 1;
+}
+.result-val.hash { color: var(--gold2); }
+
+/* VERIFY SECTION */
+.verify-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.field-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+input[type="text"], textarea {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 10px 14px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text);
+  transition: border-color 0.2s;
+}
+input[type="text"]:focus, textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+input[type="text"]::placeholder, textarea::placeholder { color: var(--dim); }
+textarea { height: 60px; resize: vertical; }
+
+/* VERDICT */
+.verdict {
+  padding: 20px;
+  border-radius: 2px;
+  margin-top: 16px;
+  display: none;
+}
+.verdict.show { display: block; }
+.verdict.match {
+  background: rgba(29,184,122,0.08);
+  border: 1px solid rgba(29,184,122,0.3);
+}
+.verdict.mismatch {
+  background: rgba(224,52,52,0.08);
+  border: 1px solid rgba(224,52,52,0.3);
+}
+.verdict-title {
+  font-family: var(--display);
+  font-size: 28px;
+  letter-spacing: 3px;
+  margin-bottom: 8px;
+}
+.verdict.match .verdict-title { color: var(--verified); }
+.verdict.mismatch .verdict-title { color: var(--alert); }
+.verdict-detail {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  line-height: 2;
+}
+.verdict.match .verdict-detail { color: var(--steel); }
+.verdict.mismatch .verdict-detail { color: var(--steel); }
+
+/* DELTA VIZ */
+.delta-viz {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  display: none;
+}
+.delta-viz.show { display: block; }
+.delta-title {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.delta-bars {
+  display: flex;
+  gap: 2px;
+  height: 32px;
+  align-items: flex-end;
+}
+.delta-bar {
+  flex: 1;
+  border-radius: 1px;
+  min-height: 4px;
+  transition: height 0.3s;
+}
+
+/* BLOCKCHAIN SECTION */
+.blockchain-section {
+  opacity: 0.6;
+}
+.pending-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: rgba(184,137,42,0.1);
+  border: 1px solid rgba(184,137,42,0.3);
+  border-radius: 2px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--gold2);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.blockchain-note {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--dim);
+  line-height: 2;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+
+/* HOW IT WORKS */
+.how-section {
+  margin-top: 48px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+}
+.how-title {
+  font-family: var(--display);
+  font-size: 28px;
+  letter-spacing: 3px;
+  margin-bottom: 24px;
+}
+.how-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+.how-step {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--panel);
+}
+.step-num {
+  font-family: var(--display);
+  font-size: 36px;
+  letter-spacing: 2px;
+  color: var(--ember);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.step-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--text);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.step-desc {
+  font-family: var(--serif);
+  font-size: 14px;
+  color: var(--steel);
+  line-height: 1.5;
+}
+
+footer {
+  border-top: 1px solid var(--border);
+  padding: 24px 40px;
+  display: flex;
+  justify-content: space-between;
+  background: var(--surface);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--dim);
+  text-transform: uppercase;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 48px;
+}
+footer span { color: var(--gold); }
+
+@media(max-width:768px){
+  nav { padding: 14px 20px; }
+  .main { padding: 32px 20px; }
+  footer { padding: 24px 20px; flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Iron Horse <span>Ledger</span></a>
+  <a href="index.html" class="nav-back">← Back to IHL</a>
+</nav>
+
+<div class="page-header">
+  <div class="page-tag">IHL DeltaVerify · Document Integrity</div>
+  <h1>DELTAVERIFY</h1>
+  <p>Establish a cryptographic baseline for any document. Verify its integrity at any future point.</p>
+</div>
+
+<div class="main">
+
+  <!-- STATUS -->
+  <div class="status-notice">
+    <div class="status-row">
+      <span class="status-dot dot-on"></span>
+      <span>SHA-256 Hashing</span>
+      <span class="status-label">— Operational</span>
+    </div>
+    <div class="status-row">
+      <span class="status-dot dot-on"></span>
+      <span>Baseline / Verify Comparison</span>
+      <span class="status-label">— Operational</span>
+    </div>
+    <div class="status-row">
+      <span class="status-dot dot-on"></span>
+      <span>XOR Delta Visualization</span>
+      <span class="status-label">— Operational</span>
+    </div>
+    <div class="status-row">
+      <span class="status-dot dot-pending"></span>
+      <span>Blockchain Anchoring (Shibarium)</span>
+      <span class="status-label">— Pending Infrastructure</span>
+    </div>
+  </div>
+
+  <!-- STEP 1: BASELINE -->
+  <div class="panel">
+    <div class="panel-title">
+      <span style="color:var(--ember);font-size:18px">01</span>
+      SET BASELINE
+    </div>
+    <div class="panel-sub">Upload a document to establish its cryptographic fingerprint</div>
+
+    <div class="drop-zone" id="baseline-drop" onclick="document.getElementById('baseline-file').click()">
+      <div class="drop-icon">⬆</div>
+      <div class="drop-label">Drop file here or click to upload</div>
+      <div class="drop-sub">Any file type · PDF, DOCX, TXT, images · No file size limit</div>
+    </div>
+    <input type="file" id="baseline-file" onchange="handleBaseline(this)">
+
+    <button class="btn btn-primary" id="baseline-btn" disabled onclick="setBaseline()">Set Baseline</button>
+
+    <div class="result-box" id="baseline-result">
+      <div class="result-row">
+        <span class="result-key">File</span>
+        <span class="result-val" id="b-filename">—</span>
+      </div>
+      <div class="result-row">
+        <span class="result-key">Size</span>
+        <span class="result-val" id="b-size">—</span>
+      </div>
+      <div class="result-row">
+        <span class="result-key">Timestamp</span>
+        <span class="result-val" id="b-time">—</span>
+      </div>
+      <div class="result-row">
+        <span class="result-key">SHA-256</span>
+        <span class="result-val hash" id="b-hash">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: VERIFY -->
+  <div class="panel">
+    <div class="panel-title">
+      <span style="color:var(--ember);font-size:18px">02</span>
+      VERIFY INTEGRITY
+    </div>
+    <div class="panel-sub">Upload the document again at any future point to compare against baseline</div>
+
+    <div class="verify-inputs">
+      <div>
+        <div class="field-label">Baseline Hash (paste from Step 1 or previous session)</div>
+        <input type="text" id="verify-baseline-hash" placeholder="SHA-256 hash from baseline...">
+      </div>
+      <div>
+        <div class="field-label">Notes (optional)</div>
+        <textarea id="verify-notes" placeholder="Document name, date, context..."></textarea>
+      </div>
+    </div>
+
+    <div class="drop-zone" id="verify-drop" onclick="document.getElementById('verify-file').click()">
+      <div class="drop-icon">⬆</div>
+      <div class="drop-label">Upload document to verify</div>
+      <div class="drop-sub">Must be the same document — any modification will be detected</div>
+    </div>
+    <input type="file" id="verify-file" onchange="handleVerify(this)">
+
+    <button class="btn btn-primary" id="verify-btn" disabled onclick="runVerify()">Verify Now</button>
+
+    <div class="verdict" id="verdict-box">
+      <div class="verdict-title" id="verdict-title">—</div>
+      <div class="verdict-detail" id="verdict-detail">—</div>
+    </div>
+
+    <div class="delta-viz" id="delta-viz">
+      <div class="delta-title">XOR Delta Visualization — Hash Divergence</div>
+      <div class="delta-bars" id="delta-bars"></div>
+    </div>
+  </div>
+
+  <!-- STEP 3: BLOCKCHAIN (PENDING) -->
+  <div class="panel blockchain-section">
+    <div class="panel-title">
+      <span style="color:var(--dim);font-size:18px">03</span>
+      BLOCKCHAIN ANCHOR
+    </div>
+    <div class="panel-sub">Immutable timestamp on Shibarium blockchain</div>
+
+    <div class="pending-badge">Pending Infrastructure</div>
+
+    <div class="blockchain-note">
+      Blockchain anchoring will submit the SHA-256 hash to the Shibarium network,
+      creating an immutable public timestamp that proves the document existed
+      in its verified state at a specific point in time.<br><br>
+      SHA-256 verification above is operational now and provides cryptographic
+      integrity checking without requiring blockchain infrastructure.
+      The hash is tamper-evident regardless of blockchain anchoring.
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="how-section">
+    <div class="how-title">HOW IT WORKS</div>
+    <div class="how-steps">
+      <div class="how-step">
+        <div class="step-num">01</div>
+        <div class="step-title">Baseline</div>
+        <div class="step-desc">Upload a document. SHA-256 produces a unique 256-bit fingerprint. Save the hash.</div>
+      </div>
+      <div class="how-step">
+        <div class="step-num">02</div>
+        <div class="step-title">Store</div>
+        <div class="step-desc">Keep the hash. It represents the verified state of the document at this moment.</div>
+      </div>
+      <div class="how-step">
+        <div class="step-num">03</div>
+        <div class="step-title">Verify</div>
+        <div class="step-desc">Upload the document again at any future point. The hash either matches or it doesn't.</div>
+      </div>
+      <div class="how-step">
+        <div class="step-num">04</div>
+        <div class="step-title">Delta</div>
+        <div class="step-desc">If hashes differ, XOR visualization shows exactly where divergence occurred.</div>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;padding:20px;border:1px solid var(--border);border-left:3px solid var(--ember);background:var(--panel)">
+      <div style="font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--ember);text-transform:uppercase;margin-bottom:8px">
+        The Principle
+      </div>
+      <div style="font-family:var(--display);font-size:24px;letter-spacing:2px;color:var(--text)">
+        Verified baseline + current state + delta = truth.
+      </div>
+      <div style="font-family:var(--mono);font-size:11px;letter-spacing:1px;color:var(--gold2);margin-top:4px">
+        Real or fake. Period.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>Iron Horse Ledger LLC · <span>Gainesville, Missouri</span> · EIN 41-5026418</p>
+  <p>DeltaVerify · Patent P1 · Universal Asset Verification System · <span>IHL™</span></p>
+</footer>
+
+<script>
+let baselineFile = null;
+let verifyFile = null;
+let baselineHash = null;
+
+// Drag and drop
+['baseline-drop', 'verify-drop'].forEach(id => {
+  const el = document.getElementById(id);
+  el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('dragover'); });
+  el.addEventListener('dragleave', () => el.classList.remove('dragover'));
+  el.addEventListener('drop', e => {
+    e.preventDefault();
+    el.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+    if (id === 'baseline-drop') processBaseline(file);
+    else processVerify(file);
+  });
+});
+
+function handleBaseline(input) {
+  if (input.files[0]) processBaseline(input.files[0]);
+}
+function handleVerify(input) {
+  if (input.files[0]) processVerify(input.files[0]);
+}
+
+function processBaseline(file) {
+  baselineFile = file;
+  document.getElementById('baseline-drop').querySelector('.drop-label').textContent = file.name;
+  document.getElementById('baseline-btn').disabled = false;
+}
+
+function processVerify(file) {
+  verifyFile = file;
+  document.getElementById('verify-drop').querySelector('.drop-label').textContent = file.name;
+  document.getElementById('verify-btn').disabled = false;
+}
+
+async function sha256(file) {
+  const buf = await file.arrayBuffer();
+  const hashBuf = await crypto.subtle.digest('SHA-256', buf);
+  const hashArr = Array.from(new Uint8Array(hashBuf));
+  return hashArr.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/1048576).toFixed(2) + ' MB';
+}
+
+async function setBaseline() {
+  if (!baselineFile) return;
+  const btn = document.getElementById('baseline-btn');
+  btn.textContent = 'Computing...';
+  btn.disabled = true;
+
+  const hash = await sha256(baselineFile);
+  baselineHash = hash;
+
+  document.getElementById('b-filename').textContent = baselineFile.name;
+  document.getElementById('b-size').textContent = formatSize(baselineFile.size);
+  document.getElementById('b-time').textContent = new Date().toISOString();
+  document.getElementById('b-hash').textContent = hash;
+
+  document.getElementById('baseline-result').classList.add('show');
+  document.getElementById('verify-baseline-hash').value = hash;
+
+  btn.textContent = 'Baseline Set';
+}
+
+async function runVerify() {
+  if (!verifyFile) return;
+  const storedHash = document.getElementById('verify-baseline-hash').value.trim().toUpperCase();
+  if (!storedHash) {
+    alert('Please paste the baseline hash or set a baseline in Step 1 first.');
+    return;
+  }
+
+  const btn = document.getElementById('verify-btn');
+  btn.textContent = 'Verifying...';
+  btn.disabled = true;
+
+  const currentHash = await sha256(verifyFile);
+  const verdictBox = document.getElementById('verdict-box');
+  const verdictTitle = document.getElementById('verdict-title');
+  const verdictDetail = document.getElementById('verdict-detail');
+  const deltaViz = document.getElementById('delta-viz');
+
+  if (currentHash === storedHash) {
+    verdictBox.className = 'verdict match show';
+    verdictTitle.textContent = 'VERIFIED — DELTA ZERO';
+    verdictDetail.innerHTML = `
+      Baseline hash: ${storedHash}<br>
+      Current hash:  ${currentHash}<br>
+      Delta: 0 — Document is unmodified. Integrity confirmed.
+    `;
+    deltaViz.classList.remove('show');
+  } else {
+    verdictBox.className = 'verdict mismatch show';
+    verdictTitle.textContent = 'MODIFIED — DELTA NON-ZERO';
+    verdictDetail.innerHTML = `
+      Baseline hash: ${storedHash}<br>
+      Current hash:  ${currentHash}<br>
+      Delta: Non-zero — Document has been modified since baseline was set.
+    `;
+    renderDelta(storedHash, currentHash);
+    deltaViz.classList.add('show');
+  }
+
+  btn.textContent = 'Verify Now';
+  btn.disabled = false;
+}
+
+function renderDelta(hashA, hashB) {
+  const bars = document.getElementById('delta-bars');
+  bars.innerHTML = '';
+  const len = Math.min(hashA.length, hashB.length);
+  for (let i = 0; i < len; i++) {
+    const a = parseInt(hashA[i], 16);
+    const b = parseInt(hashB[i], 16);
+    const xor = a ^ b;
+    const bar = document.createElement('div');
+    bar.className = 'delta-bar';
+    const h = 4 + (xor / 15) * 28;
+    bar.style.height = h + 'px';
+    bar.style.background = xor === 0
+      ? 'hsl(140,60%,35%)'
+      : `hsl(${20 + xor * 8}, 80%, ${35 + xor * 2}%)`;
+    bars.appendChild(bar);
+  }
+}
+</script>
+
+</body>
+</html>

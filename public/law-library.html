@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IHL Quipu Law Library — Missouri Trust/Divorce Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #080a09;
+  --surface:  #0f1210;
+  --panel:    #141a15;
+  --border:   #1e2820;
+  --ember:    #d4501a;
+  --gold:     #b8892a;
+  --gold2:    #d4a843;
+  --verified: #1db87a;
+  --alert:    #e03434;
+  --uncertain:#d4a843;
+  --steel:    #8a9a8c;
+  --text:     #c8d4c8;
+  --dim:      #4a5e4c;
+  --mono:     'IBM Plex Mono', monospace;
+  --display:  'Bebas Neue', sans-serif;
+  --serif:    'Crimson Pro', serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.6;
+}
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none;
+  z-index:9999;
+}
+
+/* NAV */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 14px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(8,10,9,0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo {
+  font-family: var(--display);
+  font-size: 20px;
+  letter-spacing: 4px;
+  color: var(--text);
+  text-decoration: none;
+}
+.nav-logo span { color: var(--ember); }
+.nav-back {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--dim);
+  text-decoration: none;
+  text-transform: uppercase;
+}
+.nav-back:hover { color: var(--gold2); }
+
+/* HEADER */
+.page-header {
+  padding: 48px 40px 32px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.page-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--ember);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.page-header h1 {
+  font-family: var(--display);
+  font-size: 42px;
+  letter-spacing: 3px;
+  line-height: 1;
+  margin-bottom: 12px;
+}
+.page-header p {
+  font-family: var(--serif);
+  font-size: 16px;
+  color: var(--steel);
+  font-style: italic;
+  max-width: 600px;
+}
+.scenario-badge {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 6px 16px;
+  background: rgba(212,80,26,0.1);
+  border: 1px solid rgba(212,80,26,0.3);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--ember);
+  text-transform: uppercase;
+  border-radius: 2px;
+}
+
+/* MAIN LAYOUT */
+.main {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: calc(100vh - 200px);
+}
+
+/* SIDEBAR */
+.sidebar {
+  border-right: 1px solid var(--border);
+  background: var(--surface);
+  padding: 24px;
+  position: sticky;
+  top: 57px;
+  height: calc(100vh - 57px);
+  overflow-y: auto;
+}
+
+.sidebar-title {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.pendant-nav { list-style: none; margin-bottom: 32px; }
+.pendant-nav li {
+  margin-bottom: 4px;
+}
+.pendant-nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 2px;
+  text-decoration: none;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--dim);
+  transition: all 0.15s;
+  border: 1px solid transparent;
+}
+.pendant-nav a:hover {
+  color: var(--text);
+  background: var(--panel);
+  border-color: var(--border);
+}
+.pendant-nav a.active {
+  color: var(--text);
+  background: var(--panel);
+  border-color: var(--ember);
+}
+.pendant-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend {
+  padding: 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+.legend-title {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--steel);
+}
+.twist-badge {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+.twist-s { background: rgba(29,184,122,0.15); color: var(--verified); border: 1px solid var(--verified); }
+.twist-z { background: rgba(212,168,67,0.15); color: var(--gold2); border: 1px solid var(--gold2); }
+.twist-o { background: rgba(224,52,52,0.15); color: var(--alert); border: 1px solid var(--alert); }
+
+/* CONTENT */
+.content {
+  padding: 32px 40px;
+  overflow-y: auto;
+}
+
+/* STATUS BAR */
+.status-bar {
+  display: flex;
+  gap: 24px;
+  padding: 14px 20px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--dim);
+}
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.status-dot.on { background: var(--verified); box-shadow: 0 0 6px var(--verified); }
+.status-dot.warn { background: var(--gold2); }
+.status-val { color: var(--text); }
+
+/* PENDANT SECTION */
+.pendant-section {
+  margin-bottom: 40px;
+}
+.pendant-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.pendant-color {
+  width: 4px;
+  height: 36px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.pendant-info h3 {
+  font-family: var(--display);
+  font-size: 20px;
+  letter-spacing: 2px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.pendant-info p {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--dim);
+}
+.pendant-counts {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 9px;
+}
+.count-badge {
+  padding: 3px 8px;
+  border-radius: 2px;
+}
+.count-s { background: rgba(29,184,122,0.1); color: var(--verified); }
+.count-z { background: rgba(212,168,67,0.1); color: var(--gold2); }
+
+/* NODE CARD */
+.node-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 20px 20px 20px 0;
+  margin-bottom: 8px;
+  display: grid;
+  grid-template-columns: 4px 1fr;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.node-card:hover { border-color: #2e3a30; }
+.node-card.twist-s-card { border-left: none; }
+.node-card.twist-z-card { border-left: none; }
+.node-accent {
+  width: 4px;
+  align-self: stretch;
+  margin-right: 20px;
+}
+
+.node-inner { min-width: 0; }
+
+.node-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.node-twist {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: bold;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.node-citation {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--gold2);
+  flex: 1;
+  word-break: break-word;
+}
+.node-authority {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  border-radius: 2px;
+  border: 1px solid var(--border);
+  color: var(--dim);
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.node-title {
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.node-summary {
+  font-family: var(--serif);
+  font-size: 14px;
+  color: var(--steel);
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.node-meta {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.node-meta-item {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--dim);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.hsl-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* UNCERTAIN SECTION */
+.uncertain-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(212,168,67,0.06);
+  border: 1px solid rgba(212,168,67,0.2);
+  border-radius: 2px;
+  margin-bottom: 12px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--gold2);
+  text-transform: uppercase;
+}
+
+/* COURTLISTENER SECTION */
+.cl-section {
+  margin-top: 48px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+}
+.cl-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.cl-status {
+  padding: 4px 12px;
+  border-radius: 2px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.cl-status.live { background: rgba(29,184,122,0.1); color: var(--verified); border: 1px solid rgba(29,184,122,0.3); }
+.cl-status.pending { background: rgba(107,114,128,0.1); color: var(--dim); border: 1px solid var(--border); }
+
+.cl-query-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.cl-query-bar input {
+  flex: 1;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 10px 16px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text);
+  transition: border-color 0.2s;
+}
+.cl-query-bar input:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+.cl-query-bar input::placeholder { color: var(--dim); }
+.cl-btn {
+  padding: 10px 24px;
+  background: var(--ember);
+  border: none;
+  border-radius: 2px;
+  font-family: var(--display);
+  font-size: 16px;
+  letter-spacing: 2px;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.cl-btn:hover { background: var(--ember2, #b03d10); }
+.cl-btn:disabled { background: #2a2a2a; color: #444; cursor: not-allowed; }
+
+.cl-disclaimer {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--dim);
+  padding: 10px 14px;
+  border-left: 2px solid var(--border);
+  margin-bottom: 20px;
+  line-height: 1.8;
+}
+
+.cl-results { margin-top: 16px; }
+.cl-result-item {
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  margin-bottom: 8px;
+  background: var(--panel);
+}
+.cl-result-name {
+  font-family: var(--serif);
+  font-size: 15px;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.cl-result-meta {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--dim);
+}
+
+/* ATTORNEY SUMMARY */
+.summary-section {
+  margin-top: 48px;
+  padding: 32px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  border-left: 3px solid var(--ember);
+}
+.summary-title {
+  font-family: var(--display);
+  font-size: 20px;
+  letter-spacing: 3px;
+  margin-bottom: 24px;
+  color: var(--text);
+}
+.summary-item {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.summary-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.summary-num {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--ember);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.summary-text {
+  font-family: var(--serif);
+  font-size: 16px;
+  color: var(--text);
+  line-height: 1.6;
+}
+.summary-text em {
+  font-style: normal;
+  color: var(--gold2);
+  font-family: var(--mono);
+  font-size: 13px;
+}
+.summary-item.unresolved .summary-num { color: var(--gold2); }
+.summary-item.unresolved .summary-text { color: var(--steel); }
+
+/* FOOTER */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 24px 40px;
+  display: flex;
+  justify-content: space-between;
+  background: var(--surface);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--dim);
+  text-transform: uppercase;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+footer span { color: var(--gold); }
+
+@media(max-width:768px){
+  .main { grid-template-columns: 1fr; }
+  .sidebar { position: static; height: auto; }
+  .content { padding: 24px; }
+  nav { padding: 14px 20px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Iron Horse <span>Ledger</span></a>
+  <a href="index.html" class="nav-back">← Back to IHL</a>
+</nav>
+
+<div class="page-header">
+  <div class="page-tag">IHL Quipu Law Library · Demo</div>
+  <h1>MISSOURI TRUST / DIVORCE</h1>
+  <p>Cook Islands asset protection trust reachability in dissolution proceedings</p>
+  <div class="scenario-badge">Live Demo · Missouri Jurisdiction · Asset Protection Trust Division</div>
+</div>
+
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-title">Pendants</div>
+    <ul class="pendant-nav">
+      <li><a href="#p1" class="active">
+        <span class="pendant-dot" style="background:hsl(270,95%,60%)"></span>
+        Controlling Statutes
+      </a></li>
+      <li><a href="#p2">
+        <span class="pendant-dot" style="background:hsl(284,85%,55%)"></span>
+        Trust Funding
+      </a></li>
+      <li><a href="#p3">
+        <span class="pendant-dot" style="background:hsl(299,75%,55%)"></span>
+        Offshore Structure
+      </a></li>
+      <li><a href="#p4">
+        <span class="pendant-dot" style="background:hsl(270,95%,55%)"></span>
+        Fraudulent Transfer
+      </a></li>
+      <li><a href="#p5">
+        <span class="pendant-dot" style="background:hsl(278,25%,45%)"></span>
+        Uncertain Authority
+      </a></li>
+    </ul>
+
+    <div class="legend">
+      <div class="legend-title">Encoding Key</div>
+      <div class="legend-item">
+        <span class="twist-badge twist-s">✓</span>
+        S-Twist — Confirmed good law
+      </div>
+      <div class="legend-item">
+        <span class="twist-badge twist-z">~</span>
+        Z-Twist — Uncertain status
+      </div>
+      <div class="legend-item">
+        <span class="twist-badge twist-o">✗</span>
+        Ornament — Bad law
+      </div>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+        <div class="legend-title">HSL Confidence</div>
+        <div class="legend-item" style="flex-direction:column;align-items:flex-start;gap:6px">
+          <div style="width:100%;height:8px;border-radius:4px;background:linear-gradient(to right,hsl(270,0%,40%),hsl(270,100%,50%))"></div>
+          <div style="display:flex;justify-content:space-between;width:100%;font-size:8px">
+            <span>Uncertain</span><span>Confirmed</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- STATUS BAR -->
+    <div class="status-bar">
+      <div class="status-item">
+        <span class="status-dot on"></span>
+        Cord: <span class="status-val">Missouri Family Law</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot on"></span>
+        Pendants: <span class="status-val">5</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot on"></span>
+        S-Twist: <span class="status-val">9</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot warn"></span>
+        Z-Twist: <span class="status-val">1</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot on"></span>
+        Delta: <span class="status-val">No changes flagged</span>
+      </div>
+    </div>
+
+    <!-- PENDANT 1 -->
+    <div class="pendant-section" id="p1">
+      <div class="pendant-header">
+        <div class="pendant-color" style="background:hsl(270,95%,50%)"></div>
+        <div class="pendant-info">
+          <h3>CONTROLLING STATUTES</h3>
+          <p>RSMo statutes governing property division and trust law</p>
+        </div>
+        <div class="pendant-counts">
+          <span class="count-badge count-s">S: 3</span>
+        </div>
+      </div>
+
+      <!-- RSMo 452.330 -->
+      <div class="node-card">
+        <div class="node-accent" style="background:hsl(270,95%,50%)"></div>
+        <div class="node-inner">
+          <div class="node-top">
+            <span class="node-twist twist-s">✓</span>
+            <span class="node-citation">RSMo § 452.330</span>
+            <span class="node-authority">Statutory · Controlling</span>
+          </div>
+          <div class="node-title">Disposition of Property in Dissolution</div>
+          <div class="node-summary">Court shall set apart each spouse's nonmarital property and divide marital property in proportions deemed just. Marital property means all property acquired by either spouse subsequent to the marriage. Presumption of marital property overcome by showing acquisition method. Property does not become marital solely by commingling.</div>
+          <div class="node-meta">
+            <div class="node-meta-item">
+              <span class="hsl-swatch" style="background:hsl(270,95%,25%)"></span>
+              HSL(270, 95%, 25%)
+            </div>
+            <div class="node-meta-item">Confidence: 95%</div>
+            <div class="node-meta-item">Verified: 2026-05-15</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RSMo 456.950 -->
+      <div class="node-card">
+        <div class="node-accent" style="background:hsl(270,95%,50%)"></div>
+        <div class="node-inner">
+          <div class="node-top">
+            <span class="node-twist twist-s">✓</span>
+            <span class="node-citation">RSMo § 456.950</span>
+            <span class="node-authority">Statutory · Controlling</span>
+          </div>
+          <div class="node-title">Qualified Spousal Trust (QST)</div>
+          <div class="node-summary">Marital property rights not affected by transfer to qualified spousal trust. No transfer to QST avoids Missouri fraudulent transfer act. Requires spouses as settlors and specific trust structure.</div>
+          <div class="node-meta">
+            <div class="node-meta-item"><span class="hsl-swatch" style="background:hsl(270,95%,25%)"></span>HSL(270, 95%, 25%)</div>
+            <div class="node-meta-item">Confidence: 95%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RSMo 456.5-505 -->
+      <div class="node-card">
+        <div class="node-accent" style="background:hsl(270,95%,50%)"></div>
+        <div class="node-inner">
+          <div class="node-top">
+            <span class="node-twist twist-s">✓</span>
+            <span class="node-citation">RSMo § 456.5-505</span>
+            <span class="node-authority">Statutory · Controlling</span>
+          </div>
+          <div class="node-title">Spendthrift Provisions</div>
+          <div class="node-summary">Spendthrift provision prevents creditors from satisfying claims from trust assets EXCEPT where conveyance was fraudulent, or to the extent of settlor's beneficial interest if settlor was sole beneficiary or retained power to amend. Critical limitation for Cook Islands trusts where settlor retains any control.</div>
+          <div class="node-meta">
+            <div class="node-meta-item"><span class="hsl-swatch" style="background:hsl(270,95%,25%)"></span>HSL(270, 95%, 25%)</div>
+            <div class="node-meta-item">Confidence: 95%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PENDANT 2 -->
+    <div class="pendant-section" id="p2">
+      <div class="pendant-header">
+        <div class="pendant-color" style="background:hsl(284,85%,50%)"></div>
+        <div class="pendant-info">
+          <h3>TRUST FUNDING</h3>
+          <p>Marital vs. separate property — threshold question</p>
+        </div>
+        <div class="pendant-counts">
+          <span class="count-badge count-s">S: 3</span>
+        </div>
+      </div>
+
+      <div class="node-card">
+        <div class="node-accent" style="background:hsl(284,85%,50%)"></div>
+        <div class="node-inner">
+          <div class="node-top">
+            <span class="node-twist twist-s">✓</span>
+            <span class="node-citation">Moore v. Moore (Mo. Ct. App.)</span>
+            <span class="node-authority">Controlling · Missouri</span>
+          </div>
+          <div class="node-title">Charles Moore v. Melanie Moore — Constructive Receipt</div>
+          <div class="node-summary">Missouri Court of Appeals: undistributed trust income is marital property where husband had right to terminate trust at age 35. Constructive receipt doctrine — any income received from non-marital property after marriage is marital property in Missouri.</div>
+          <div class="node-meta">
+            <div class="node-meta-item"><span class="hsl-swatch" style="background:hsl(284,85%,25%)"></span>HSL(284, 85%, 25%)</div>
+            <div class="node-meta-item">Confidence: 85%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="node-card">
+        <div class="node-accent" style="background:hsl(284,85%,50%)"></div>
+        <div class="node-inner">
+          <div class="node-top">
+            <span class="node-twist twist-s">✓</span>
+            <span class="node-citation">Moore v. Moore (Mo. Ct. App. W.D.)</span>
+            <span class="node-authority">Controlling · Missouri W.D.</span>
+          </div>
+          <div class="node-title">Linda Moore v. Jaclyn Moore — Trust Income as Marital Property</div>
+          <div class="node-summary">Western District Missouri Court of Appeals: trust income received as result of corporation paying excess distributions to trusts was marital property. Reinforces constructive receipt doctrine.</div>
+          <div class="node-meta">
+            <div class="node-meta-item"><span class="hsl-swatch" style="background:hsl(284,85%,25%)"></span>HSL(284, 85%, 25%)</div>
+            <div class="node-meta-item">Confidence: 85%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="node-card">
+        <div class="node-accent" style="background:hsl(291,65%,50%)"></div>
+        <div class="node-inner">
+          <div class="node-top">
+            <span class="node-twist twist-s">✓</span>
+            <span class="node-citation">Riechers v. Riechers, 679 N.Y.S.2d 333 (1998)</span>
+            <span class="node-authority">Landmark · Persuasive</span>
+          </div>
+          <div class="node-title">Community Property Funded Offshore Trust</div>
+          <div class="node-summary">When offshore trust funded with community or marital property, trust assets included in marital estate for divorce purposes. Foundational case cited across jurisdictions. Spouse cannot unilaterally convert marital property to separate property by placing in offshore trust.</div>
+          <div class="node-meta">
+            <div class="node-meta-item"><span class="hsl-swatch" style="background:hsl(291,65%,25%)"></span>HSL(291, 65%, 25%)</div>
+            <div class="node-meta-item">Confidence: 65%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PENDANT 3 -->
+    <div class="pendant-section" id="p3">
+      <div class="pendant-header">
+        <div class="pendant-color" style="background:hsl(299,75%,50%)"></div>
+        <div class="pendant-info">
+          <h3>OFFSHORE STRUCTURE</h3>
+          <p>Validity factors — what courts examine</p>
+        </div>
+        <div class="pendant-counts">
+          <span class="count-badge count-s">S: 2</span>
+        </div>
+      </div>
+
+      <div class="node-card">
+        <div class="node-accent" style="background:hsl(299,75%,50%)"></div>
+        <div class="node-inner">
+          <div class="node-top">
+            <span class="node-twist twist-s">✓</span>
+            <span class="node-citation">FTC v. Affordable Media, LLC, 179 F.3d 1228 (9th Cir. 1999)</span>
+            <span class="node-authority">Landmark · Federal</span>
+          </div>
+          <div class="node-title">Self-Trustee Problem</div>
+          <div class="node-summary">Ninth Circuit: defendant trustee of own offshore trust found in contempt. Purpose of offshore trust is assets controlled from outside United States — self-trustee defeats that purpose. Settlor cannot be sole trustee of own asset protection trust.</div>
+          <div class="node-meta">
+            <div class="node-meta-item"><span class="hsl-swatch" style="background:hsl(299,75%,25%)"></span>HSL(299, 75%, 25%)</div>
+            <div class="node-meta-item">Confidence: 75%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="node-card">
+        <div class="node-accent" style="background:hsl(299,70%,50%)"></div>
+        <div class="node-inner">
+          <div class="node-top">
+            <span class="node-twist twist-s">✓</span>
+            <span class="node-citation">In Re Lawrence, 279 F.3d 1294 (11th Cir. 2002)</span>
+            <span class="node-authority">Landmark · Federal</span>
+          </div>
+          <div class="node-title">Revocable Trust Cannot Protect Assets</div>
+          <div class="node-summary">Court refused to recognize offshore trust protection where trust was revocable — grantor could rescind whenever desired. Irrevocability is threshold requirement for offshore asset protection trust validity.</div>
+          <div class="node-meta">
+            <div class="node-meta-item"><span class="hsl-swatch" style="background:hsl(299,70%,25%)"></span>HSL(299, 70%, 25%)</div>
+            <div class="node-meta-item">Confidence: 70%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PENDANT 4 -->
+    <div class="pendant-section" id="p4">
+      <div class="pendant-header">
+        <div class="pendant-color" style="background:hsl(270,95%,50%)"></div>
+        <div class="pendant-info">
+          <h3>FRAUDULENT TRANSFER</h3>
+          <p>Missouri uniform fraudulent transfer act — timing issues</p>
+        </div>
+        <div class="pendant-counts">
+          <span class="count-badge count-s">S: 1</span>
+        </div>
+      </div>
+
+      <div class="node-card">
+        <div class="node-accent" style="background:hsl(270,95%,50%)"></div>
+        <div class="node-inner">
+          <div class="node-top">
+            <span class="node-twist twist-s">✓</span>
+            <span class="node-citation">RSMo Chapter 428</span>
+            <span class="node-authority">Statutory · Controlling</span>
+          </div>
+          <div class="node-title">Missouri Uniform Fraudulent Transfer Act</div>
+          <div class="node-summary">No transfer to qualified spousal trust avoids Missouri fraudulent transfer act. Transfers made with actual intent to hinder, delay, or defraud creditors or spouses are voidable. Trusts established immediately before divorce proceedings carry high fraudulent transfer risk. Period of 1-2 years generally sufficient to establish legitimate intent.</div>
+          <div class="node-meta">
+            <div class="node-meta-item"><span class="hsl-swatch" style="background:hsl(270,95%,25%)"></span>HSL(270, 95%, 25%)</div>
+            <div class="node-meta-item">Confidence: 95%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PENDANT 5 — UNCERTAIN -->
+    <div class="pendant-section" id="p5">
+      <div class="pendant-header">
+        <div class="pendant-color" style="background:hsl(278,25%,45%)"></div>
+        <div class="pendant-info">
+          <h3>UNCERTAIN AUTHORITY</h3>
+          <p>Z-Twist entries requiring verification</p>
+        </div>
+        <div class="pendant-counts">
+          <span class="count-badge count-z">Z: 1</span>
+        </div>
+      </div>
+
+      <div class="uncertain-header">
+        ⚠ Z-Twist — Requires Verification Before Relying
+      </div>
+
+      <div class="node-card">
+        <div class="node-accent" style="background:hsl(278,25%,45%)"></div>
+        <div class="node-inner">
+          <div class="node-top">
+            <span class="node-twist twist-z">~</span>
+            <span class="node-citation">Z-Twist — No direct Missouri Supreme Court ruling confirmed</span>
+            <span class="node-authority">Secondary · Unconfirmed</span>
+          </div>
+          <div class="node-title">Missouri Courts and Cook Islands Trusts — Limited Direct Precedent</div>
+          <div class="node-summary">Missouri has no confirmed Supreme Court ruling directly addressing Cook Islands trust reachability in divorce. Most authority comes from other jurisdictions applied by analogy. CourtListener search below may surface Missouri appellate decisions on offshore trusts specifically.</div>
+          <div class="node-meta">
+            <div class="node-meta-item"><span class="hsl-swatch" style="background:hsl(278,25%,45%)"></span>HSL(278, 25%, 45%)</div>
+            <div class="node-meta-item">Confidence: 25%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COURTLISTENER LIVE SEARCH -->
+    <div class="cl-section">
+      <div class="cl-header">
+        <h3 style="font-family:var(--display);font-size:22px;letter-spacing:2px">COURTLISTENER LIVE SEARCH</h3>
+        <span class="cl-status" id="cl-status-badge">Loading...</span>
+      </div>
+
+      <div class="cl-disclaimer">
+        Live results from CourtListener — 9+ million federal and state court opinions.<br>
+        Results are unfiltered and require attorney review before relying on them as authority.<br>
+        Use to identify additional cases for manual verification and encoding.
+      </div>
+
+      <div class="cl-query-bar">
+        <input type="text" id="cl-query" value="Cook Islands trust divorce marital property Missouri" placeholder="Enter legal research query...">
+        <button class="cl-btn" id="cl-search-btn" onclick="runSearch()">Search</button>
+      </div>
+
+      <div class="cl-results" id="cl-results">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--dim);padding:16px;text-align:center">
+          Click Search to run live query
+        </div>
+      </div>
+    </div>
+
+    <!-- ATTORNEY SUMMARY -->
+    <div class="summary-section">
+      <div class="summary-title">SUMMARY FOR ATTORNEY</div>
+      <p style="font-family:var(--mono);font-size:9px;letter-spacing:1px;color:var(--dim);margin-bottom:24px;text-transform:uppercase">
+        Based on current Missouri authority — 9 confirmed entries, 1 uncertain
+      </p>
+
+      <div class="summary-item">
+        <div class="summary-num">01 — Threshold Question</div>
+        <div class="summary-text">
+          How was the trust funded? If funded with marital assets: strong authority trust is reachable.
+          <em>Riechers v. Riechers — controlling across jurisdictions</em>
+        </div>
+      </div>
+
+      <div class="summary-item">
+        <div class="summary-num">02 — Trust Structure</div>
+        <div class="summary-text">
+          Is it properly irrevocable? Self-trustee creates high contempt risk.
+          <em>FTC v. Affordable Media — 9th Cir. 1999</em>
+          Revocable structure: not protected.
+          <em>In Re Lawrence — 11th Cir. 2002</em>
+        </div>
+      </div>
+
+      <div class="summary-item">
+        <div class="summary-num">03 — Timing</div>
+        <div class="summary-text">
+          When was trust established? Recent establishment before divorce filing carries fraudulent transfer risk.
+          <em>RSMo Chapter 428 — Missouri UFTA</em>
+        </div>
+      </div>
+
+      <div class="summary-item">
+        <div class="summary-num">04 — Missouri Income Rule</div>
+        <div class="summary-text">
+          Even if trust principal is protected, income generated during marriage is likely marital property.
+          <em>Moore v. Moore — constructive receipt doctrine</em>
+        </div>
+      </div>
+
+      <div class="summary-item unresolved">
+        <div class="summary-num">05 — Unresolved · Z-Twist</div>
+        <div class="summary-text">
+          No Missouri Supreme Court direct ruling on Cook Islands trust reachability confirmed.
+          Use CourtListener search above to identify Missouri appellate decisions for manual verification.
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end content -->
+</div><!-- end main -->
+
+<footer>
+  <p>Iron Horse Ledger LLC · <span>Gainesville, Missouri</span> · EIN 41-5026418</p>
+  <p>Quipu Law Library · Demo Version · Missouri Trust/Divorce · May 2026</p>
+  <p>All entries require attorney verification before relying as authority · <span>IHL™</span></p>
+</footer>
+
+<script>
+async function runSearch() {
+  const query = document.getElementById('cl-query').value.trim();
+  if (!query) return;
+
+  const btn = document.getElementById('cl-search-btn');
+  const results = document.getElementById('cl-results');
+  btn.disabled = true;
+  btn.textContent = 'Searching...';
+  results.innerHTML = '<div style="font-family:var(--mono);font-size:10px;color:var(--dim);padding:16px;text-align:center">Querying CourtListener...</div>';
+
+  try {
+    const resp = await fetch(`/api/courtlistener?q=${encodeURIComponent(query)}&page_size=8`);
+    if (!resp.ok) throw new Error('API unavailable');
+    const data = await resp.json();
+
+    if (data.error) throw new Error(data.error);
+
+    const items = data.results || [];
+    const count = data.count || 0;
+
+    if (items.length === 0) {
+      results.innerHTML = '<div style="font-family:var(--mono);font-size:10px;color:var(--dim);padding:16px">No results returned.</div>';
+    } else {
+      results.innerHTML = `
+        <div style="font-family:var(--mono);font-size:9px;letter-spacing:1px;color:var(--dim);margin-bottom:12px;text-transform:uppercase">
+          ${count} total results · Showing top ${items.length}
+        </div>
+        ${items.map(c => `
+          <div class="cl-result-item">
+            <div class="cl-result-name">${c.caseName || c.case_name || 'Unknown'}</div>
+            <div class="cl-result-meta">
+              ${c.court || c.court_id || 'Unknown court'} &nbsp;·&nbsp;
+              ${c.dateFiled || c.date_filed || 'Date unknown'}
+              ${c.url ? `&nbsp;·&nbsp; <a href="https://courtlistener.com${c.url}" target="_blank" style="color:var(--gold2);text-decoration:none">View →</a>` : ''}
+            </div>
+          </div>
+        `).join('')}
+      `;
+      document.getElementById('cl-status-badge').textContent = 'LIVE';
+      document.getElementById('cl-status-badge').className = 'cl-status live';
+    }
+  } catch(e) {
+    results.innerHTML = `<div style="font-family:var(--mono);font-size:10px;color:var(--dim);padding:16px">
+      API unavailable — token pending or connection error.<br>
+      <span style="color:var(--dim);font-size:9px">${e.message}</span>
+    </div>`;
+    document.getElementById('cl-status-badge').textContent = 'PENDING TOKEN';
+    document.getElementById('cl-status-badge').className = 'cl-status pending';
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Search';
+}
+
+// Check API status on load
+window.addEventListener('load', async () => {
+  const badge = document.getElementById('cl-status-badge');
+  try {
+    const resp = await fetch('/api/courtlistener?q=test&page_size=1');
+    if (resp.ok) {
+      badge.textContent = 'LIVE';
+      badge.className = 'cl-status live';
+    } else {
+      badge.textContent = 'PENDING TOKEN';
+      badge.className = 'cl-status pending';
+    }
+  } catch {
+    badge.textContent = 'PENDING TOKEN';
+    badge.className = 'cl-status pending';
+  }
+});
+</script>
+
+</body>
+</html>
