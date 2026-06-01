@@ -1014,18 +1014,12 @@ async function runSearch() {
   const results = document.getElementById('cl-results');
   btn.disabled = true;
   btn.textContent = 'Searching...';
-  results.innerHTML = '<div style="font-family:var(--mono);font-size:10px;color:var(--dim);padding:16px;text-align:center">Querying CourtListener...</div>';
+  results.innerHTML = '<div style="font-family:var(--mono);font-size:10px;color:var(--dim);padding:16px;text-align:center">Claude is analyzing relevance...</div>';
 
   try {
     const resp = await fetch(`/.netlify/functions/query?q=${encodeURIComponent(query)}&jurisdiction=Missouri`);
     if (!resp.ok) throw new Error('API unavailable');
     const data = await resp.json();
-    console.log('Query response:', JSON.stringify(data));
-
-    if (data.error) throw new Error(data.error);
-
-    const items = data.results || [];
-    const count = data.count || 0;
 
     const items = data.results || [];
     const summary = data.summary || "";
@@ -1033,11 +1027,11 @@ async function runSearch() {
     const filtered = data.filtered_count || 0;
 
     if (items.length === 0) {
-      results.innerHTML = '<div style="font-family:var(--mono);font-size:10px;color:var(--dim);padding:16px">No relevant cases found for this query.</div>';
+      results.innerHTML = '<div style="font-family:var(--mono);font-size:10px;color:var(--dim);padding:16px">No relevant cases found.</div>';
     } else {
       results.innerHTML = `
         <div style="font-family:var(--mono);font-size:9px;letter-spacing:1px;color:var(--dim);margin-bottom:12px;text-transform:uppercase">
-          ${total} total · ${filtered} relevant after filtering
+          ${total} total · ${filtered} relevant after Claude filtering
         </div>
         ${summary ? `<div style="font-family:var(--serif);font-size:14px;color:var(--steel);padding:12px 0;border-bottom:1px solid var(--border);margin-bottom:12px;font-style:italic">${summary}</div>` : ''}
         ${items.map(c => `
@@ -1060,11 +1054,8 @@ async function runSearch() {
     }
   } catch(e) {
     results.innerHTML = `<div style="font-family:var(--mono);font-size:10px;color:var(--dim);padding:16px">
-      API unavailable — token pending or connection error.<br>
-      <span style="color:var(--dim);font-size:9px">${e.message}</span>
+      Error: ${e.message}
     </div>`;
-    document.getElementById('cl-status-badge').textContent = 'PENDING TOKEN';
-    document.getElementById('cl-status-badge').className = 'cl-status pending';
   }
 
   btn.disabled = false;
