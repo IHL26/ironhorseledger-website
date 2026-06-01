@@ -1020,6 +1020,7 @@ async function runSearch() {
     const resp = await fetch(`/.netlify/functions/query?q=${encodeURIComponent(query)}&jurisdiction=Missouri`);
     if (!resp.ok) throw new Error('API unavailable');
     const data = await resp.json();
+    console.log('Query response:', JSON.stringify(data));
 
     if (data.error) throw new Error(data.error);
 
