@@ -1017,7 +1017,7 @@ async function runSearch() {
   results.innerHTML = '<div style="font-family:var(--mono);font-size:10px;color:var(--dim);padding:16px;text-align:center">Querying CourtListener...</div>';
 
   try {
-    const resp = await fetch(`/api/courtlistener?q=${encodeURIComponent(query)}&page_size=8`);
+    const resp = await fetch(`/.netlify/functions/query?q=${encodeURIComponent(query)}&jurisdiction=Missouri`);
     if (!resp.ok) throw new Error('API unavailable');
     const data = await resp.json();
 
@@ -1026,21 +1026,31 @@ async function runSearch() {
     const items = data.results || [];
     const count = data.count || 0;
 
+    const items = data.results || [];
+    const summary = data.summary || "";
+    const total = data.total_found || 0;
+    const filtered = data.filtered_count || 0;
+
     if (items.length === 0) {
-      results.innerHTML = '<div style="font-family:var(--mono);font-size:10px;color:var(--dim);padding:16px">No results returned.</div>';
+      results.innerHTML = '<div style="font-family:var(--mono);font-size:10px;color:var(--dim);padding:16px">No relevant cases found for this query.</div>';
     } else {
       results.innerHTML = `
         <div style="font-family:var(--mono);font-size:9px;letter-spacing:1px;color:var(--dim);margin-bottom:12px;text-transform:uppercase">
-          ${count} total results · Showing top ${items.length}
+          ${total} total · ${filtered} relevant after filtering
         </div>
+        ${summary ? `<div style="font-family:var(--serif);font-size:14px;color:var(--steel);padding:12px 0;border-bottom:1px solid var(--border);margin-bottom:12px;font-style:italic">${summary}</div>` : ''}
         ${items.map(c => `
-          <div class="cl-result-item">
-            <div class="cl-result-name">${c.caseName || c.case_name || 'Unknown'}</div>
+          <div class="cl-result-item" style="border-left:3px solid ${c.twist === 'S' ? 'var(--verified)' : 'var(--gold2)'}">
+            <div class="cl-result-name">${c.caseName || 'Unknown'}</div>
             <div class="cl-result-meta">
-              ${c.court || c.court_id || 'Unknown court'} &nbsp;·&nbsp;
-              ${c.dateFiled || c.date_filed || 'Date unknown'}
+              ${c.court || 'Unknown court'} &nbsp;·&nbsp;
+              ${c.dateFiled || 'Date unknown'} &nbsp;·&nbsp;
+              <span style="color:${c.twist === 'S' ? 'var(--verified)' : 'var(--gold2)'}">
+                ${c.twist === 'S' ? '✓' : '~'} ${c.authority || 'unknown'} · ${c.confidence}% confidence
+              </span>
               ${c.url ? `&nbsp;·&nbsp; <a href="https://courtlistener.com${c.url}" target="_blank" style="color:var(--gold2);text-decoration:none">View →</a>` : ''}
             </div>
+            ${c.reason ? `<div style="font-family:var(--serif);font-size:13px;color:var(--dim);margin-top:4px;font-style:italic">${c.reason}</div>` : ''}
           </div>
         `).join('')}
       `;
