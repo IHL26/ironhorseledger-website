@@ -4,13 +4,17 @@ exports.handler = async (event) => {
   if (!TOKEN) {
     return {
       statusCode: 500,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type"
+      },
       body: JSON.stringify({ error: "API token not configured" })
     };
   }
 
   const query = event.queryStringParameters?.q || "";
   const pageSize = event.queryStringParameters?.page_size || "5";
-
   const url = `https://www.courtlistener.com/api/rest/v4/search/?q=${encodeURIComponent(query)}&type=o&page_size=${pageSize}`;
 
   try {
@@ -20,12 +24,21 @@ exports.handler = async (event) => {
     const data = await response.json();
     return {
       statusCode: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type"
+      },
       body: JSON.stringify(data)
     };
   } catch (error) {
     return {
       statusCode: 500,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type"
+      },
       body: JSON.stringify({ error: error.message })
     };
   }
